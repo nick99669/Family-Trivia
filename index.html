@@ -1,0 +1,993 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <title>Family Trivia</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#0f1b33;
+      --muted:#94a3b8;
+      --text:#e5e7eb;
+      --accent:#60a5fa;
+      --good:#22c55e;
+      --bad:#ef4444;
+      --warn:#f59e0b;
+      --line:rgba(255,255,255,.10);
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 900px at 10% 0%, rgba(96,165,250,.18), transparent 55%),
+                  radial-gradient(900px 800px at 90% 10%, rgba(34,197,94,.10), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    header{
+      position: sticky; top:0;
+      backdrop-filter: blur(10px);
+      background: rgba(11,18,32,.78);
+      border-bottom: 1px solid var(--line);
+      z-index: 10;
+    }
+    .wrap{max-width: 980px; margin: 0 auto; padding: 14px 14px 22px;}
+    .top{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+    .brand{display:flex; align-items:center; gap:10px;}
+    .logo{
+      width:34px; height:34px; border-radius:10px;
+      background: linear-gradient(135deg, rgba(96,165,250,.95), rgba(34,197,94,.85));
+      box-shadow: var(--shadow);
+    }
+    .title{font-weight:800; letter-spacing:.2px}
+    .subtitle{font-size:12px; color:var(--muted); margin-top:2px}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+    .tab{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 999px;
+      font-weight:650;
+      font-size: 13px;
+      cursor:pointer;
+    }
+    .tab.active{
+      border-color: rgba(96,165,250,.55);
+      background: rgba(96,165,250,.12);
+    }
+    main .grid{display:grid; grid-template-columns: 1fr; gap:12px;}
+    @media (min-width: 900px){
+      main .grid{ grid-template-columns: 1.2fr .8fr; align-items:start; }
+    }
+    .card{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--line);
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+    }
+    .card .hd h2{margin:0; font-size: 16px; letter-spacing:.2px;}
+    .card .hd .small{font-size:12px; color:var(--muted); margin-top:4px}
+    .card .bd{padding: 14px;}
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .col{flex:1; min-width: 160px}
+    label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
+    select, input, textarea{
+      width:100%;
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 12px;
+      font-size: 15px;
+      outline:none;
+    }
+    textarea{min-height: 84px; resize: vertical;}
+    .btn{
+      border:none;
+      background: rgba(96,165,250,.16);
+      color: var(--text);
+      border:1px solid rgba(96,165,250,.35);
+      padding: 14px 14px;
+      border-radius: 14px;
+      font-weight:800;
+      font-size: 15px;
+      cursor:pointer;
+      width:100%;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+    }
+    .btn.secondary{background: rgba(255,255,255,.05); border-color: var(--line); font-weight:750;}
+    .btn.good{ background: rgba(34,197,94,.16); border-color: rgba(34,197,94,.45); }
+    .btn.bad{ background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.4); }
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+    .btnrow{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+    .btnrow.single{ grid-template-columns: 1fr; }
+    .qbox{
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      border-radius: 16px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+    .qmeta{display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 10px;}
+    .pill{
+      font-size: 12px;
+      color: var(--text);
+      border: 1px solid var(--line);
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.03);
+    }
+    .pill.accent{ border-color: rgba(96,165,250,.5); background: rgba(96,165,250,.12); }
+    .pill.good{ border-color: rgba(34,197,94,.55); background: rgba(34,197,94,.12); }
+    .pill.bad{ border-color: rgba(239,68,68,.55); background: rgba(239,68,68,.10); }
+    .qtext{font-size: 18px; font-weight:800; line-height:1.25;}
+    .ans{margin-top: 10px; font-size: 16px; line-height:1.35;}
+    .muted{color:var(--muted)}
+    .list{display:flex; flex-direction:column; gap:10px;}
+    .item{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      border-radius: 16px;
+      padding: 12px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .item .name{font-weight:850}
+    .item .stats{font-size:12px; color:var(--muted); margin-top:3px}
+    .item .right{display:flex; gap:8px; align-items:center}
+    .mini{
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.15);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor:pointer;
+      font-weight:750;
+      font-size: 13px;
+    }
+    .danger{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10);}
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, .92);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-weight: 750;
+      display:none;
+      z-index: 999;
+      max-width: calc(100vw - 24px);
+      box-shadow: var(--shadow);
+    }
+    .toast.show{display:block}
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      color: var(--text);
+    }
+    .note{font-size: 12px; color:var(--muted); line-height: 1.35;}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="title">Family Trivia</div>
+          <div class="subtitle">Mobile-friendly • Works offline • Add to Home Screen</div>
+        </div>
+      </div>
+      <button class="mini" id="installBtn" style="display:none">Install</button>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="play">Play</button>
+      <button class="tab" data-tab="profiles">Profiles</button>
+      <button class="tab" data-tab="questions">Questions</button>
+      <button class="tab" data-tab="backup">Backup</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="tab-play" class="tabview">
+    <div class="grid">
+      <section class="card">
+        <div class="hd">
+          <div>
+            <h2>Play</h2>
+            <div class="small">Pick difficulty + focus. Reveal, then award the result to anyone (or nobody).</div>
+          </div>
+          <div class="pill accent" id="qCountPill">Questions: —</div>
+        </div>
+        <div class="bd">
+          <div class="row">
+            <div class="col">
+              <label>Difficulty</label>
+              <select id="difficultySel">
+                <option value="kids">Kids</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+            <div class="col">
+              <label>Focus</label>
+              <select id="focusSel"></select>
+            </div>
+          </div>
+
+          <div class="qbox" id="qBox" style="display:none">
+            <div class="qmeta">
+              <span class="pill" id="pillDifficulty"></span>
+              <span class="pill" id="pillFocus"></span>
+              <span class="pill" id="pillTags"></span>
+            </div>
+            <div class="qtext" id="qText"></div>
+            <div class="ans" id="qAnswer" style="display:none"></div>
+
+            <div class="row" style="margin-top:12px">
+              <div class="col">
+                <label>Who answered?</label>
+                <select id="whoSel"></select>
+                <div class="note" style="margin-top:6px">Choose a person to award the result, or pick <b>Nobody</b>.</div>
+              </div>
+            </div>
+
+            <div class="btnrow" style="margin-top:12px">
+              <button class="btn secondary" id="revealBtn">Reveal Answer</button>
+              <button class="btn secondary" id="newBtn">New Question</button>
+            </div>
+
+            <div class="btnrow" style="margin-top:10px">
+              <button class="btn good" id="correctBtn" disabled>✅ Correct</button>
+              <button class="btn bad" id="wrongBtn" disabled>❌ Incorrect</button>
+            </div>
+          </div>
+
+          <div class="btnrow single" style="margin-top:12px" id="startRow">
+            <button class="btn" id="startBtn">Start / Next Question</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="hd">
+          <div>
+            <h2>Quick Stats</h2>
+            <div class="small">Pick someone to view their points + badges.</div>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="row">
+            <div class="col">
+              <label>Stats View</label>
+              <select id="statsSel"></select>
+            </div>
+          </div>
+          <div class="qbox" id="statsBox" style="margin-top:12px">
+            <div class="qmeta">
+              <span class="pill accent" id="statPoints">Points: 0</span>
+              <span class="pill" id="statStreak">Streak: 0</span>
+            </div>
+            <div class="muted" style="font-size:13px; margin-top:8px">Badges</div>
+            <div id="badgeRow" class="qmeta" style="margin-top:8px"></div>
+            <div class="muted" style="font-size:13px; margin-top:8px">Totals</div>
+            <div id="totalsRow" class="qmeta" style="margin-top:8px"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="tab-profiles" class="tabview" style="display:none">
+    <section class="card">
+      <div class="hd">
+        <div>
+          <h2>Profiles</h2>
+          <div class="small">Add family members. Points + badges are tracked per person on this device.</div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <div class="col">
+            <label>New profile name</label>
+            <input id="newProfileName" placeholder="e.g., Nick" />
+          </div>
+          <div class="col" style="min-width:220px">
+            <label>&nbsp;</label>
+            <button class="btn" id="addProfileBtn">Add Profile</button>
+          </div>
+        </div>
+        <div style="height:12px"></div>
+        <div class="list" id="profileList"></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="tab-questions" class="tabview" style="display:none">
+    <section class="card">
+      <div class="hd">
+        <div>
+          <h2>Questions</h2>
+          <div class="small">Add your own questions. Use tags like <span class="kbd">kenzie</span>, <span class="kbd">nick</span>, <span class="kbd">evee</span>, <span class="kbd">minecraft</span>, <span class="kbd">bible</span>, etc.</div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <div class="col">
+            <label>Difficulty</label>
+            <select id="qDiff">
+              <option value="kids">Kids</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="col">
+            <label>Tags (comma-separated)</label>
+            <input id="qTags" placeholder="e.g., kenzie, medical, child development" />
+          </div>
+        </div>
+        <div style="height:10px"></div>
+        <label>Question</label>
+        <textarea id="qQuestion" placeholder="Type the question..."></textarea>
+        <div style="height:10px"></div>
+        <label>Answer</label>
+        <textarea id="qAnswerText" placeholder="Type the answer..."></textarea>
+        <div style="height:12px"></div>
+        <div class="btnrow">
+          <button class="btn" id="addQuestionBtn">Add Question</button>
+          <button class="btn secondary" id="resetBuiltinsBtn">Reset Built-in Questions</button>
+        </div>
+        <div style="height:14px"></div>
+        <div class="note">Tip: Use <b>Focus</b> in Play to pull only a tag (like <span class="kbd">kenzie</span> or <span class="kbd">space</span>).</div>
+      </div>
+    </section>
+  </div>
+
+  <div id="tab-backup" class="tabview" style="display:none">
+    <section class="card">
+      <div class="hd">
+        <div>
+          <h2>Backup</h2>
+          <div class="small">Export/import your data (profiles + stats + questions) as JSON.</div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="btnrow">
+          <button class="btn" id="exportBtn">Export JSON</button>
+          <button class="btn secondary" id="copyExportBtn">Copy Export to Clipboard</button>
+        </div>
+        <div style="height:12px"></div>
+        <label>Export / Import text</label>
+        <textarea id="backupText" placeholder="Export appears here. Paste JSON here to import."></textarea>
+        <div style="height:12px"></div>
+        <div class="btnrow">
+          <button class="btn" id="importBtn">Import JSON</button>
+          <button class="btn secondary danger" id="wipeBtn">Wipe All Data</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="tab-settings" class="tabview" style="display:none">
+    <section class="card">
+      <div class="hd">
+        <div>
+          <h2>Settings</h2>
+          <div class="small">Avoid repeats and tune how many recent questions to skip.</div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <div class="col">
+            <label>Avoid recent repeats</label>
+            <select id="avoidRecentSel">
+              <option value="true">On</option>
+              <option value="false">Off</option>
+            </select>
+          </div>
+          <div class="col">
+            <label>Recent window (per difficulty)</label>
+            <input id="recentWindowInp" type="number" min="0" max="200" />
+          </div>
+        </div>
+        <div style="height:12px"></div>
+        <button class="btn" id="saveSettingsBtn">Save Settings</button>
+        <div style="height:12px"></div>
+        <div class="note">
+          <b>Install on phone:</b> once this is hosted on an HTTPS link, open it in Chrome/Safari → <b>Add to Home Screen</b>.
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const LS_KEY = "family_trivia_pwa_v1";
+
+const DEFAULT_QUESTIONS = [
+  { id: "k-1", d:"kids", q:"What color do you get when you mix red and yellow?", a:"Orange.", t:["colors"] },
+  { id: "k-2", d:"kids", q:"How many legs does a spider have?", a:"Eight.", t:["animals"] },
+  { id: "k-3", d:"kids", q:"What planet do we live on?", a:"Earth.", t:["space"] },
+  { id: "k-4", d:"kids", q:"What do bees make?", a:"Honey.", t:["animals"] },
+  { id: "k-5", d:"kids", q:"How many days are in a week?", a:"Seven.", t:["numbers"] },
+  { id: "k-6", d:"kids", q:"What is the opposite of hot?", a:"Cold.", t:["words"] },
+  { id: "k-7", d:"kids", q:"Which animal says ‘moo’?", a:"A cow.", t:["animals"] },
+  { id: "k-8", d:"kids", q:"What shape has 3 sides?", a:"A triangle.", t:["shapes"] },
+  { id: "k-9", d:"kids", q:"What do you call a baby cat?", a:"A kitten.", t:["animals"] },
+  { id: "k-10", d:"kids", q:"What’s the first month of the year?", a:"January.", t:["calendar"] },
+  { id: "k-11", d:"kids", q:"In Minecraft, what tool do you usually use to mine stone?", a:"A pickaxe.", t:["minecraft"] },
+  { id: "k-12", d:"kids", q:"In Minecraft, what do you need to make a torch?", a:"A stick and coal (or charcoal).", t:["minecraft"] },
+  { id: "k-13", d:"kids", q:"What do monster trucks drive over in shows?", a:"Cars (and ramps).", t:["monster trucks"] },
+  { id: "k-14", d:"kids", q:"A tractor is used on a farm to help do what?", a:"Pull and move things (and work fields).", t:["tractors"] },
+  { id: "k-15", d:"kids", q:"In Minecraft, what do you call the green enemy that explodes?", a:"A Creeper.", t:["minecraft"] },
+  { id: "k-16", d:"kids", q:"What animal says ‘oink’?", a:"A pig.", t:["animals"] },
+  { id: "k-17", d:"kids", q:"What animal says ‘neigh’?", a:"A horse.", t:["animals"] },
+  { id: "k-18", d:"kids", q:"A monster truck has very big what?", a:"Tires.", t:["monster trucks"] },
+  { id: "k-19", d:"kids", q:"In Minecraft, what do you call the place with lots of lava and red blocks?", a:"The Nether.", t:["minecraft"] },
+  { id: "k-20", d:"kids", q:"What do you call a baby cow?", a:"A calf.", t:["animals"] },
+  { id: "k-21", d:"kids", q:"In Minecraft, what do you build to go to The End?", a:"An End Portal.", t:["minecraft"] },
+  { id: "k-22", d:"kids", q:"What do chickens lay?", a:"Eggs.", t:["animals"] },
+  { id: "k-23", d:"kids", q:"A tractor often pulls what kind of thing behind it?", a:"A trailer or farm tool.", t:["tractors"] },
+  { id: "k-24", d:"kids", q:"What animal lives in water and has gills?", a:"A fish.", t:["animals"] },
+
+  { id: "e-1", d:"easy", q:"What is the largest ocean on Earth?", a:"The Pacific Ocean.", t:["geography"] },
+  { id: "e-2", d:"easy", q:"What is the capital of France?", a:"Paris.", t:["geography"] },
+  { id: "e-3", d:"easy", q:"Which country is shaped like a boot?", a:"Italy.", t:["geography"] },
+  { id: "e-4", d:"easy", q:"Which is the biggest continent?", a:"Asia.", t:["geography"] },
+  { id: "e-5", d:"easy", q:"Which ocean is on the east coast of the United States?", a:"The Atlantic Ocean.", t:["geography"] },
+  { id: "e-6", d:"easy", q:"What river runs through Egypt and is famous in history?", a:"The Nile River.", t:["geography","history"] },
+  { id: "e-7", d:"easy", q:"In the Bible, who built the ark?", a:"Noah.", t:["bible"] },
+  { id: "e-8", d:"easy", q:"In the Bible, who was swallowed by a big fish?", a:"Jonah.", t:["bible"] },
+  { id: "e-9", d:"easy", q:"In the Bible, where was Jesus born?", a:"Bethlehem.", t:["bible"] },
+  { id: "e-10", d:"easy", q:"Which planet is closest to the Sun?", a:"Mercury.", t:["space","science","nick","steve"] },
+  { id: "e-11", d:"easy", q:"What is Earth’s only natural satellite called?", a:"The Moon.", t:["space","science","nick","steve"] },
+  { id: "e-12", d:"easy", q:"Which planet has rings that are easy to recognize?", a:"Saturn.", t:["space","science","nick","steve"] },
+  { id: "e-13", d:"easy", q:"On TikTok, what does ‘FYP’ commonly stand for?", a:"For You Page.", t:["tiktok","social","evee"] },
+  { id: "e-14", d:"easy", q:"What does ‘DM’ stand for on social media?", a:"Direct message.", t:["social","evee"] },
+  { id: "e-15", d:"easy", q:"What do you call it when something becomes very popular online very fast?", a:"Viral.", t:["social","evee"] },
+  { id: "e-16", d:"easy", q:"What is the capital of Oregon?", a:"Salem.", t:["geography"] },
+
+  { id: "m-1", d:"medium", q:"What is the capital of Canada?", a:"Ottawa.", t:["geography"] },
+  { id: "m-2", d:"medium", q:"Which mountain range includes Mount Everest?", a:"The Himalayas.", t:["geography"] },
+  { id: "m-3", d:"medium", q:"What ancient civilization built the pyramids at Giza?", a:"Ancient Egypt.", t:["history"] },
+  { id: "m-4", d:"medium", q:"What wall fell in 1989, symbolizing the end of the Cold War?", a:"The Berlin Wall.", t:["history"] },
+  { id: "m-5", d:"medium", q:"What year did the U.S. declare independence?", a:"1776.", t:["history"] },
+  { id: "m-6", d:"medium", q:"In the Bible, who led the Israelites out of Egypt?", a:"Moses.", t:["bible"] },
+  { id: "m-7", d:"medium", q:"In the Bible, who defeated Goliath?", a:"David.", t:["bible"] },
+  { id: "m-8", d:"medium", q:"Which developmental stage (Piaget) is typically associated with ages 0–2?", a:"Sensorimotor stage.", t:["child development","kenzie"] },
+  { id: "m-9", d:"medium", q:"Which developmental stage (Piaget) is typically associated with ages 2–7?", a:"Preoperational stage.", t:["child development","kenzie"] },
+  { id: "m-10", d:"medium", q:"What does ‘CPR’ stand for?", a:"Cardiopulmonary resuscitation.", t:["medical","kenzie"] },
+  { id: "m-11", d:"medium", q:"What is the medical term for high blood pressure?", a:"Hypertension.", t:["medical","kenzie"] },
+  { id: "m-12", d:"medium", q:"What is a light-year a measure of?", a:"Distance.", t:["space","science","nick","steve"] },
+  { id: "m-13", d:"medium", q:"What is the name of our galaxy?", a:"The Milky Way.", t:["space","science","nick","steve"] },
+  { id: "m-14", d:"medium", q:"What is the force that pulls objects toward each other?", a:"Gravity.", t:["science","nick","steve"] },
+  { id: "m-15", d:"medium", q:"What does ‘POV’ usually stand for in short-form videos?", a:"Point of view.", t:["tiktok","social","evee"] },
+  { id: "m-16", d:"medium", q:"What does ‘algorithm’ mean in social media context?", a:"Rules/software that decide what content you’re shown.", t:["social","evee"] },
+  { id: "m-17", d:"medium", q:"What is the telescope launched in 2021 that studies deep space in infrared?", a:"The James Webb Space Telescope (JWST).", t:["space","science","nick","steve"] },
+  { id: "m-18", d:"medium", q:"In early childhood, ‘fine motor skills’ mainly involve what?", a:"Small muscle movements (hands/fingers) like writing, buttoning, cutting.", t:["child development","kenzie"] },
+
+  { id: "h-1", d:"hard", q:"Which country has the most time zones?", a:"France (including overseas territories).", t:["geography"] },
+  { id: "h-2", d:"hard", q:"Which ancient trade route connected China to Europe?", a:"The Silk Road.", t:["history"] },
+  { id: "h-3", d:"hard", q:"What year did World War II end?", a:"1945.", t:["history"] },
+  { id: "h-4", d:"hard", q:"What year did the Titanic sink?", a:"1912.", t:["history"] },
+  { id: "h-5", d:"hard", q:"In the Bible, what is the last book?", a:"Revelation.", t:["bible"] },
+  { id: "h-6", d:"hard", q:"In the Bible, which king was famous for wisdom?", a:"King Solomon.", t:["bible"] },
+  { id: "h-7", d:"hard", q:"In the Bible, which apostle is known for doubting?", a:"Thomas.", t:["bible"] },
+  { id: "h-8", d:"hard", q:"In early childhood education, ‘scaffolding’ is most associated with which theorist?", a:"Lev Vygotsky.", t:["child development","kenzie"] },
+  { id: "h-9", d:"hard", q:"What does ‘ZPD’ stand for in Vygotsky’s theory?", a:"Zone of Proximal Development.", t:["child development","kenzie"] },
+  { id: "h-10", d:"hard", q:"What does ‘DNA’ stand for?", a:"Deoxyribonucleic acid.", t:["science","medical","kenzie","nick","steve"] },
+  { id: "h-11", d:"hard", q:"What is the nearest star system to our Solar System?", a:"Alpha Centauri (with Proxima Centauri as the nearest star).", t:["space","science","nick","steve"] },
+  { id: "h-12", d:"hard", q:"What is the name of the river where Jesus was baptized?", a:"The Jordan River.", t:["bible","geography"] },
+];
+
+const BADGES = [
+  { id:"first", name:"First Point", check: p => p.points >= 1 },
+  { id:"ten", name:"10 Points", check: p => p.points >= 10 },
+  { id:"twentyfive", name:"25 Points", check: p => p.points >= 25 },
+  { id:"streak3", name:"Streak x3", check: p => p.streak >= 3 },
+  { id:"streak7", name:"Streak x7", check: p => p.streak >= 7 },
+  { id:"kids5", name:"Kids x5", check: p => (p.correctByDiff.kids||0) >= 5 },
+  { id:"space5", name:"Space x5", check: p => (p.correctByTag.space||0) >= 5 },
+  { id:"bible5", name:"Bible x5", check: p => (p.correctByTag.bible||0) >= 5 },
+  { id:"science5", name:"Science x5", check: p => (p.correctByTag.science||0) >= 5 },
+  { id:"kenzie5", name:"Kenzie x5", check: p => (p.correctByTag.kenzie||0) >= 5 },
+];
+
+const uid = () => Math.random().toString(36).slice(2,10) + "-" + Date.now().toString(36);
+const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
+const normTags = (s) => String(s||"").split(",").map(x=>x.trim()).filter(Boolean).map(x=>x.toLowerCase());
+
+function toast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>el.classList.remove("show"), 1600);
+}
+
+function defaultState(){
+  return {
+    version: 1,
+    profiles: [],
+    activeProfileId: null,
+    questions: DEFAULT_QUESTIONS,
+    recentGlobalByDifficulty: {},
+    settings: { avoidRecent: true, recentWindow: 50 }
+  };
+}
+function loadState(){
+  const raw = localStorage.getItem(LS_KEY);
+  if(!raw) return defaultState();
+  try{
+    const parsed = JSON.parse(raw);
+    const existing = Array.isArray(parsed.questions) ? parsed.questions : [];
+    const byId = new Map(existing.map(q=>[q.id,q]));
+    for(const q of DEFAULT_QUESTIONS){ if(!byId.has(q.id)) byId.set(q.id,q); }
+    return {
+      version: 1,
+      profiles: parsed.profiles || [],
+      activeProfileId: parsed.activeProfileId || null,
+      questions: Array.from(byId.values()),
+      recentGlobalByDifficulty: parsed.recentGlobalByDifficulty || {},
+      settings: {
+        avoidRecent: parsed.settings?.avoidRecent ?? true,
+        recentWindow: clamp(parsed.settings?.recentWindow ?? 50, 0, 200),
+      }
+    };
+  }catch(e){ return defaultState(); }
+}
+let state = loadState();
+function saveState(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+function pickQuestion(difficulty, focusTag){
+  let pool = state.questions.filter(q=>q.d===difficulty);
+  if(pool.length===0) return null;
+  const focus = (focusTag||"all").toLowerCase();
+  if(focus!=="all"){
+    pool = pool.filter(q => (q.t||[]).some(t=>String(t).toLowerCase()===focus));
+    if(pool.length===0) return null;
+  }
+  const avoid = !!state.settings.avoidRecent;
+  const windowN = clamp(state.settings.recentWindow||50, 0, 200);
+  const recent = new Set((state.recentGlobalByDifficulty[difficulty]||[]).slice(0, windowN));
+  let available = avoid ? pool.filter(q=>!recent.has(q.id)) : pool;
+  if(available.length===0) available = pool;
+
+  const q = available[Math.floor(Math.random()*available.length)];
+  const arr = [q.id, ...(state.recentGlobalByDifficulty[difficulty]||[])].filter((v,i,a)=>a.indexOf(v)===i);
+  state.recentGlobalByDifficulty[difficulty] = arr.slice(0, 500);
+  saveState();
+  return q;
+}
+
+function makeProfile(name){
+  return {
+    id: uid(),
+    name: name.trim(),
+    points: 0,
+    streak: 0,
+    correct: 0,
+    wrong: 0,
+    correctByDiff: { kids:0, easy:0, medium:0, hard:0 },
+    correctByTag: {},
+    badges: [],
+    updatedAt: Date.now(),
+  };
+}
+function recomputeBadges(p){
+  const have = new Set(p.badges||[]);
+  for(const b of BADGES){
+    if(b.check(p)) have.add(b.id);
+  }
+  p.badges = Array.from(have);
+  return p;
+}
+function recordAnswer(profileId, q, wasCorrect){
+  const idx = state.profiles.findIndex(p=>p.id===profileId);
+  if(idx<0) return;
+  const p = state.profiles[idx];
+  if(wasCorrect){
+    p.points += 1;
+    p.correct += 1;
+    p.streak += 1;
+    p.correctByDiff[q.d] = (p.correctByDiff[q.d]||0)+1;
+    for(const tag of (q.t||[])){
+      const k = String(tag).toLowerCase();
+      p.correctByTag[k] = (p.correctByTag[k]||0)+1;
+    }
+  }else{
+    p.wrong += 1;
+    p.streak = 0;
+  }
+  p.updatedAt = Date.now();
+  recomputeBadges(p);
+  state.profiles[idx]=p;
+  saveState();
+}
+
+const els = {
+  tabs: [...document.querySelectorAll(".tab")],
+  views: {
+    play: document.getElementById("tab-play"),
+    profiles: document.getElementById("tab-profiles"),
+    questions: document.getElementById("tab-questions"),
+    backup: document.getElementById("tab-backup"),
+    settings: document.getElementById("tab-settings"),
+  },
+  difficultySel: document.getElementById("difficultySel"),
+  focusSel: document.getElementById("focusSel"),
+  whoSel: document.getElementById("whoSel"),
+  statsSel: document.getElementById("statsSel"),
+  qBox: document.getElementById("qBox"),
+  qText: document.getElementById("qText"),
+  qAnswer: document.getElementById("qAnswer"),
+  pillDifficulty: document.getElementById("pillDifficulty"),
+  pillFocus: document.getElementById("pillFocus"),
+  pillTags: document.getElementById("pillTags"),
+  revealBtn: document.getElementById("revealBtn"),
+  newBtn: document.getElementById("newBtn"),
+  correctBtn: document.getElementById("correctBtn"),
+  wrongBtn: document.getElementById("wrongBtn"),
+  startBtn: document.getElementById("startBtn"),
+  startRow: document.getElementById("startRow"),
+  qCountPill: document.getElementById("qCountPill"),
+
+  newProfileName: document.getElementById("newProfileName"),
+  addProfileBtn: document.getElementById("addProfileBtn"),
+  profileList: document.getElementById("profileList"),
+
+  qDiff: document.getElementById("qDiff"),
+  qTags: document.getElementById("qTags"),
+  qQuestion: document.getElementById("qQuestion"),
+  qAnswerText: document.getElementById("qAnswerText"),
+  addQuestionBtn: document.getElementById("addQuestionBtn"),
+  resetBuiltinsBtn: document.getElementById("resetBuiltinsBtn"),
+
+  exportBtn: document.getElementById("exportBtn"),
+  copyExportBtn: document.getElementById("copyExportBtn"),
+  backupText: document.getElementById("backupText"),
+  importBtn: document.getElementById("importBtn"),
+  wipeBtn: document.getElementById("wipeBtn"),
+
+  avoidRecentSel: document.getElementById("avoidRecentSel"),
+  recentWindowInp: document.getElementById("recentWindowInp"),
+  saveSettingsBtn: document.getElementById("saveSettingsBtn"),
+
+  statPoints: document.getElementById("statPoints"),
+  statStreak: document.getElementById("statStreak"),
+  badgeRow: document.getElementById("badgeRow"),
+  totalsRow: document.getElementById("totalsRow"),
+};
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function setTab(name){
+  for(const b of els.tabs){ b.classList.toggle("active", b.dataset.tab===name); }
+  for(const [k,v] of Object.entries(els.views)){ v.style.display = (k===name) ? "block" : "none"; }
+}
+els.tabs.forEach(b=>b.addEventListener("click", ()=>setTab(b.dataset.tab)));
+
+function focusOptions(){
+  const set = new Set(["all"]);
+  for(const q of state.questions){ for(const t of (q.t||[])) set.add(String(t).toLowerCase()); }
+  const preferred = ["all","geography","history","bible","science","space","minecraft","animals","monster trucks","tractors","kenzie","nick","steve","evee","tiktok","social","medical","child development"];
+  const rest = [...set].filter(x=>!preferred.includes(x)).sort();
+  return preferred.filter(x=>set.has(x)).concat(rest);
+}
+function renderFocus(){
+  const opts = focusOptions();
+  const cur = els.focusSel.value || "all";
+  els.focusSel.innerHTML = opts.map(t=>`<option value="${escapeHtml(t)}">${t==="all"?"All":t}</option>`).join("");
+  els.focusSel.value = opts.includes(cur) ? cur : "all";
+}
+function renderWho(){
+  const cur = els.whoSel.value || "nobody";
+  els.whoSel.innerHTML = [
+    `<option value="nobody">Nobody</option>`,
+    ...state.profiles.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`)
+  ].join("");
+  els.whoSel.value = (cur==="nobody" || state.profiles.some(p=>p.id===cur)) ? cur : "nobody";
+}
+function renderStatsSel(){
+  const cur = els.statsSel.value || "";
+  els.statsSel.innerHTML = [
+    `<option value="">Select a profile</option>`,
+    ...state.profiles.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`)
+  ].join("");
+  els.statsSel.value = state.profiles.some(p=>p.id===cur) ? cur : (state.activeProfileId || "");
+}
+function renderQuickStats(){
+  const pid = els.statsSel.value;
+  state.activeProfileId = pid || null;
+  saveState();
+  const p = state.profiles.find(x=>x.id===pid);
+  if(!p){
+    els.statPoints.textContent = "Points: 0";
+    els.statStreak.textContent = "Streak: 0";
+    els.badgeRow.innerHTML = `<span class="pill">No badges yet</span>`;
+    els.totalsRow.innerHTML = `<span class="pill">Correct: 0</span><span class="pill">Wrong: 0</span>`;
+    return;
+  }
+  els.statPoints.textContent = `Points: ${p.points}`;
+  els.statStreak.textContent = `Streak: ${p.streak}`;
+  const badges = (p.badges||[]).map(id => BADGES.find(b=>b.id===id)?.name).filter(Boolean);
+  els.badgeRow.innerHTML = badges.length
+    ? badges.map(n=>`<span class="pill accent">${escapeHtml(n)}</span>`).join("")
+    : `<span class="pill">No badges yet</span>`;
+  els.totalsRow.innerHTML = `
+    <span class="pill good">Correct: ${p.correct}</span>
+    <span class="pill bad">Wrong: ${p.wrong}</span>
+    <span class="pill">Kids: ${p.correctByDiff.kids||0}</span>
+    <span class="pill">Easy: ${p.correctByDiff.easy||0}</span>
+    <span class="pill">Med: ${p.correctByDiff.medium||0}</span>
+    <span class="pill">Hard: ${p.correctByDiff.hard||0}</span>
+  `;
+}
+
+let currentQ = null;
+let revealed = false;
+
+function renderCounts(){
+  els.qCountPill.textContent = `Questions: ${state.questions.length}`;
+}
+function showQuestion(q){
+  currentQ = q;
+  revealed = false;
+  els.qBox.style.display = "block";
+  els.startRow.style.display = "none";
+  els.qText.textContent = q.q;
+  els.qAnswer.style.display = "none";
+  els.qAnswer.textContent = q.a;
+
+  els.pillDifficulty.textContent = q.d.toUpperCase();
+  els.pillFocus.textContent = `Focus: ${els.focusSel.value==="all" ? "All" : els.focusSel.value}`;
+  els.pillTags.textContent = `Tags: ${(q.t||[]).slice(0,6).join(", ")}${(q.t||[]).length>6?"…":""}`;
+
+  els.correctBtn.disabled = true;
+  els.wrongBtn.disabled = true;
+  renderWho();
+}
+function nextQuestion(){
+  const d = els.difficultySel.value;
+  const f = els.focusSel.value;
+  const q = pickQuestion(d, f);
+  if(!q){ toast("No questions found for that focus + difficulty"); return; }
+  showQuestion(q);
+  renderCounts();
+}
+
+els.startBtn.addEventListener("click", ()=>{
+  if(state.profiles.length===0){ toast("Add at least one profile to award points"); setTab("profiles"); return; }
+  nextQuestion();
+});
+els.newBtn.addEventListener("click", ()=>{
+  if(state.profiles.length===0){ toast("Add at least one profile to award points"); setTab("profiles"); return; }
+  nextQuestion();
+});
+els.revealBtn.addEventListener("click", ()=>{
+  if(!currentQ) return;
+  revealed = true;
+  els.qAnswer.style.display = "block";
+  els.correctBtn.disabled = false;
+  els.wrongBtn.disabled = false;
+});
+function award(wasCorrect){
+  if(!currentQ) return;
+  const who = els.whoSel.value;
+  if(who==="nobody"){ toast("No point awarded"); nextQuestion(); return; }
+  const p = state.profiles.find(x=>x.id===who);
+  if(!p){ toast("Select who answered (or Nobody)"); return; }
+  recordAnswer(who, currentQ, wasCorrect);
+  toast(wasCorrect ? `${p.name} +1` : `${p.name} missed`);
+  renderQuickStats();
+  nextQuestion();
+}
+els.correctBtn.addEventListener("click", ()=>award(true));
+els.wrongBtn.addEventListener("click", ()=>award(false));
+
+// Profiles
+function renderProfiles(){
+  const sorted = [...state.profiles].sort((a,b)=>(b.points||0)-(a.points||0) || a.name.localeCompare(b.name));
+  els.profileList.innerHTML = sorted.length ? "" : `<div class="note">No profiles yet. Add Nick, Evee, Kenzie, etc.</div>`;
+  for(const p of sorted){
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <div>
+        <div class="name">${escapeHtml(p.name)}</div>
+        <div class="stats">Points: ${p.points} • Streak: ${p.streak} • Correct: ${p.correct} • Wrong: ${p.wrong}</div>
+      </div>
+      <div class="right">
+        <button class="mini" data-action="stats" data-id="${p.id}">View</button>
+        <button class="mini danger" data-action="del" data-id="${p.id}">Delete</button>
+      </div>
+    `;
+    els.profileList.appendChild(div);
+  }
+  els.profileList.querySelectorAll("button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+      if(action==="stats"){
+        els.statsSel.value = id;
+        renderQuickStats();
+        setTab("play");
+        toast("Stats updated");
+      }else if(action==="del"){
+        const p = state.profiles.find(x=>x.id===id);
+        if(confirm(`Delete profile "${p?.name||""}"? This removes their stats.`)){
+          state.profiles = state.profiles.filter(x=>x.id!==id);
+          if(state.activeProfileId===id) state.activeProfileId=null;
+          saveState();
+          renderProfiles();
+          renderWho();
+          renderStatsSel();
+          renderQuickStats();
+          toast("Profile deleted");
+        }
+      }
+    });
+  });
+}
+els.addProfileBtn.addEventListener("click", ()=>{
+  const name = els.newProfileName.value.trim();
+  if(!name){ toast("Enter a name"); return; }
+  if(state.profiles.some(p=>p.name.toLowerCase()===name.toLowerCase())){ toast("That name already exists"); return; }
+  const p = makeProfile(name);
+  state.profiles.push(p);
+  if(!state.activeProfileId) state.activeProfileId = p.id;
+  saveState();
+  els.newProfileName.value = "";
+  renderProfiles();
+  renderWho();
+  renderStatsSel();
+  renderQuickStats();
+  toast("Profile added");
+});
+
+// Questions
+els.addQuestionBtn.addEventListener("click", ()=>{
+  const d = els.qDiff.value;
+  const tags = normTags(els.qTags.value);
+  const q = els.qQuestion.value.trim();
+  const a = els.qAnswerText.value.trim();
+  if(!q || !a){ toast("Add question + answer"); return; }
+  const item = { id: "u-"+uid(), d, q, a, t: tags };
+  state.questions.push(item);
+  saveState();
+  els.qQuestion.value = "";
+  els.qAnswerText.value = "";
+  toast("Question added");
+  renderCounts();
+  renderFocus();
+});
+els.resetBuiltinsBtn.addEventListener("click", ()=>{
+  if(!confirm("Reset built-in questions? (This keeps your custom questions too.)")) return;
+  const byId = new Map(state.questions.map(q=>[q.id,q]));
+  for(const q of DEFAULT_QUESTIONS){ if(!byId.has(q.id)) byId.set(q.id,q); }
+  state.questions = Array.from(byId.values());
+  saveState();
+  toast("Built-ins reset/merged");
+  renderCounts();
+  renderFocus();
+});
+
+// Backup
+els.exportBtn.addEventListener("click", ()=>{
+  els.backupText.value = JSON.stringify(state, null, 2);
+  toast("Export ready");
+});
+els.copyExportBtn.addEventListener("click", async ()=>{
+  try{
+    const txt = els.backupText.value || JSON.stringify(state, null, 2);
+    await navigator.clipboard.writeText(txt);
+    els.backupText.value = txt;
+    toast("Copied");
+  }catch(e){ toast("Copy failed (paste manually)"); }
+});
+els.importBtn.addEventListener("click", ()=>{
+  const txt = els.backupText.value.trim();
+  if(!txt){ toast("Paste JSON to import"); return; }
+  try{
+    const parsed = JSON.parse(txt);
+    state = {
+      version: 1,
+      profiles: Array.isArray(parsed.profiles) ? parsed.profiles : [],
+      activeProfileId: parsed.activeProfileId || null,
+      questions: Array.isArray(parsed.questions) ? parsed.questions : DEFAULT_QUESTIONS,
+      recentGlobalByDifficulty: parsed.recentGlobalByDifficulty || {},
+      settings: {
+        avoidRecent: parsed.settings?.avoidRecent ?? true,
+        recentWindow: clamp(parsed.settings?.recentWindow ?? 50, 0, 200),
+      }
+    };
+    saveState();
+    toast("Imported");
+    initRenders();
+  }catch(e){ toast("Invalid JSON"); }
+});
+els.wipeBtn.addEventListener("click", ()=>{
+  if(!confirm("Wipe ALL data on this device?")) return;
+  localStorage.removeItem(LS_KEY);
+  state = defaultState();
+  saveState();
+  toast("Wiped");
+  initRenders();
+});
+
+// Settings
+els.saveSettingsBtn.addEventListener("click", ()=>{
+  state.settings.avoidRecent = (els.avoidRecentSel.value === "true");
+  state.settings.recentWindow = clamp(parseInt(els.recentWindowInp.value || "50",10) || 50, 0, 200);
+  saveState();
+  toast("Saved");
+});
+els.statsSel.addEventListener("change", ()=>renderQuickStats());
+
+function initRenders(){
+  renderCounts();
+  renderFocus();
+  renderWho();
+  renderProfiles();
+  renderStatsSel();
+  renderQuickStats();
+  els.avoidRecentSel.value = String(!!state.settings.avoidRecent);
+  els.recentWindowInp.value = String(state.settings.recentWindow ?? 50);
+  if(state.profiles.length===0){
+    els.qBox.style.display = "none";
+    els.startRow.style.display = "block";
+  }
+}
+initRenders();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{ navigator.serviceWorker.register("./service-worker.js").catch(()=>{}); });
+}
+
+let deferredPrompt = null;
+const installBtn = document.getElementById("installBtn");
+window.addEventListener("beforeinstallprompt", (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = "inline-block";
+});
+installBtn.addEventListener("click", async ()=>{
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  try{ await deferredPrompt.userChoice; }catch(e){}
+  deferredPrompt = null;
+  installBtn.style.display = "none";
+});
+</script>
+</body>
+</html>
